@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Google Fonts (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Embedded Custom CSS -->
+    <style>
+        /* Use a nicer font */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa; /* Light gray background */
+        }
+
+        /* Style the invoice preview box */
+        .invoice-box {
+            background-color: #ffffff;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        /* Ensure table headers in preview are clear */
+        #invoicePreview thead th {
+            background-color: #e9ecef;
+            font-weight: 500;
+        }
+
+        /* Improve input group styling */
+        .input-group-text {
+            background-color: #e9ecef;
+            font-weight: 500;
+            border-right: 0; /* Optional: visual tweak */
+        }
+
+        /* Responsive adjustments if needed */
+        @media (max-width: 991.98px) {
+            #invoicePreview {
+                margin-top: 2rem; /* Add space between form and preview on smaller screens */
+                position: static !important; /* Remove sticky positioning on smaller screens */
+            }
+            /* Stack columns on smaller screens for better readability */
+            .row > div[class^="col-lg-"] {
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* Style logo preview */
+        #logoPreview, #invoiceLogoPreview {
+            margin-top: 10px;
+            border: 1px solid #dee2e6;
+            padding: 5px;
+            background-color: #fff;
+        }
+
+        /* Ensure remove buttons are visually distinct */
+        .remove-item-btn {
+            color: #dc3545; /* Bootstrap danger color */
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0; /* Reset padding */
+            display: inline-flex; /* Align icon properly */
+            align-items: center;
+            justify-content: center;
+        }
+        .remove-item-btn:hover {
+            color: #a0212e; /* Darker red on hover */
+        }
+
+        /* Ensure form controls are slightly smaller */
+        .form-control-sm, .btn-sm {
+            font-size: 0.875rem; /* Bootstrap's default sm size */
+        }
+
+        /* Improve card appearance */
+        .card {
+            border: none; /* Remove default card border */
+        }
+
+        /* Center align table cell content vertically */
+         #invoiceItems td, #prev_invoiceItems td {
+            vertical-align: middle;
+        }
+        #invoiceItems .item-total {
+            vertical-align: middle;
+            padding-top: 0.75rem; /* Adjust vertical align for readonly cell */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid mt-5 mb-5">
+        <h1 class="text-center mb-4 display-6 fw-bold text-primary">Invoice Generator</h1>
+
+        <div class="row g-lg-5 g-md-4 g-3"> {/* Adjusted gutters for different screens */}
+            <!-- Input Form Section -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm p-md-4 p-3"> {/* Adjusted padding */}
+                    <h2 class="h4 mb-4 border-bottom pb-2">Invoice Details</h2>
+
+                    <!-- Your Company Details -->
+                    <fieldset class="mb-4">
+                        <legend class="h6 mb-3">Your Company</legend>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label for="yourCompanyName" class="form-label visually-hidden">Your Company Name</label>
+                                <input type="text" class="form-control form-control-sm" id="yourCompanyName" placeholder="Your Company Name *">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="yourCompanyAddress" class="form-label visually-hidden">Your Address</label>
+                                <input type="text" class="form-control form-control-sm" id="yourCompanyAddress" placeholder="Address">
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="yourCompanyCity" class="form-label visually-hidden">City, State, Zip</label>
+                                <input type="text" class="form-control form-control-sm" id="yourCompanyCity" placeholder="City, State, Zip">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="yourCompanyPhone" class="form-label visually-hidden">Phone / Email</label>
+                                <input type="text" class="form-control form-control-sm" id="yourCompanyPhone" placeholder="Phone / Email">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Client Details -->
+                    <fieldset class="mb-4">
+                        <legend class="h6 mb-3">Bill To</legend>
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label for="clientCompanyName" class="form-label visually-hidden">Client Company Name</label>
+                                <input type="text" class="form-control form-control-sm" id="clientCompanyName" placeholder="Client Company Name *">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="clientCompanyAddress" class="form-label visually-hidden">Client Address</label>
+                                <input type="text" class="form-control form-control-sm" id="clientCompanyAddress" placeholder="Address">
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label for="clientCompanyCity" class="form-label visually-hidden">City, State, Zip</label>
+                                <input type="text" class="form-control form-control-sm" id="clientCompanyCity" placeholder="City, State, Zip">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="clientCompanyPhone" class="form-label visually-hidden">Phone / Email</label>
+                                <input type="text" class="form-control form-control-sm" id="clientCompanyPhone" placeholder="Phone / Email">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Invoice Meta -->
+                    <fieldset class="mb-4">
+                        <legend class="h6 mb-3">Invoice Info</legend>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="invoiceNumber" class="form-label">Invoice #</label>
+                                <input type="text" class="form-control form-control-sm" id="invoiceNumber" placeholder="INV-001">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="invoiceDate" class="form-label">Invoice Date</label>
+                                <input type="date" class="form-control form-control-sm" id="invoiceDate">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="dueDate" class="form-label">Due Date</label>
+                                <input type="date" class="form-control form-control-sm" id="dueDate">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Logo Upload -->
+                    <div class="mb-4">
+                        <label for="companyLogoInput" class="form-label h6">Company Logo</label>
+                        <input class="form-control form-control-sm" type="file" id="companyLogoInput" accept="image/*">
+                        <img id="logoPreview" src="#" alt="Logo Preview" class="mt-2 img-thumbnail" style="max-height: 80px; display: none;">
+                    </div>
+
+                    <!-- Items Table -->
+                    <h3 class="h6 mb-3">Items</h3>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="min-width: 200px;">Description</th>
+                                    <th scope="col" style="width: 80px;">Qty</th>
+                                    <th scope="col" style="width: 100px;">Price</th>
+                                    <th scope="col" style="width: 110px;">Total</th>
+                                    <th scope="col" class="text-center" style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceItems">
+                                <!-- Item rows will be added here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm mb-4 align-self-start" id="addItemBtn">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-1" viewBox="0 0 16 16">
+                           <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                           <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                         </svg>
+                        Add Item
+                    </button>
+
+                    <!-- Calculation Summary -->
+                    <div class="row mt-auto pt-3 border-top"> {/* Use mt-auto to push to bottom if needed, border-top for separation */}
+                        <div class="col-md-6 ms-auto">
+                             <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text" style="width: 100px;">Subtotal</span>
+                                <input type="text" class="form-control text-end" id="subtotal" value="$0.00" readonly>
+                            </div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text" style="width: 100px;">Tax (%)</span>
+                                <input type="number" class="form-control" id="taxRate" value="0" min="0" step="0.01" aria-label="Tax Rate Percent">
+                                <input type="text" class="form-control text-end" id="taxAmount" value="$0.00" readonly aria-label="Tax Amount">
+                            </div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text" style="width: 100px;">Discount (%)</span>
+                                <input type="number" class="form-control" id="discountRate" value="0" min="0" step="0.01" aria-label="Discount Rate Percent">
+                                <input type="text" class="form-control text-end" id="discountAmount" value="$0.00" readonly aria-label="Discount Amount">
+                            </div>
+                            <div class="input-group input-group-sm mb-2 fw-bold">
+                                <span class="input-group-text" style="width: 100px;">Total</span>
+                                <input type="text" class="form-control text-end" id="totalAmount" value="$0.00" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-4 mt-3">
+                        <label for="notes" class="form-label h6">Notes / Payment Terms</label>
+                        <textarea class="form-control form-control-sm" id="notes" rows="3" placeholder="e.g., Payment due within 30 days. Thank you for your business!"></textarea>
+                    </div>
+
+                     <!-- Action Button -->
+                     <div class="text-end mt-3 border-top pt-3">
+                        <button type="button" class="btn btn-success" id="generatePdfBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                            </svg>
+                            Download PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Preview Section -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm p-md-4 p-3 position-sticky top-0" > {/* Adjusted padding */}
+                    <h2 class="h4 mb-4 text-center">Invoice Preview</h2>
+                    <div id="invoicePreview" class="invoice-box border p-4">
+                        <!-- Invoice content generated by JS -->
+                        <div class="row mb-4">
+                            <div class="col-sm-7 col-md-8 mb-3 mb-sm-0">
+                                <img id="invoiceLogoPreview" src="#" alt="Company Logo" style="max-height: 80px; max-width: 200px; display: none; margin-bottom: 15px;">
+                                <h2 id="prev_yourCompanyName" class="h5 mb-1 fw-bold">Your Company Name</h2>
+                                <p id="prev_yourCompanyAddress" class="mb-0 text-muted small">123 Your Street</p>
+                                <p id="prev_yourCompanyCity" class="mb-0 text-muted small">Your City, YS 12345</p>
+                                <p id="prev_yourCompanyPhone" class="mb-0 text-muted small">Phone / Email</p>
+                            </div>
+                            <div class="col-sm-5 col-md-4 text-sm-end">
+                                <h1 class="h2 mb-0 text-uppercase">Invoice</h1>
+                                <p class="mb-0 small"><strong>Invoice #:</strong> <span id="prev_invoiceNumber">INV-001</span></p>
+                                <p class="mb-0 small"><strong>Date:</strong> <span id="prev_invoiceDate">YYYY-MM-DD</span></p>
+                                <p class="mb-0 small"><strong>Due Date:</strong> <span id="prev_dueDate">YYYY-MM-DD</span></p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                             <div class="col-sm-7 col-md-8">
+                                <h5 class="h6">Bill To:</h5>
+                                <p id="prev_clientCompanyName" class="fw-bold mb-1">Client Company Name</p>
+                                <p id="prev_clientCompanyAddress" class="mb-0 text-muted small">456 Client Avenue</p>
+                                <p id="prev_clientCompanyCity" class="mb-0 text-muted small">Client City, CS 67890</p>
+                                <p id="prev_clientCompanyPhone" class="mb-0 text-muted small">Phone / Email</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Qty</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prev_invoiceItems">
+                                    <!-- Preview items go here -->
+                                    <tr>
+                                        <td>Sample Item</td>
+                                        <td class="text-end">1</td>
+                                        <td class="text-end">$0.00</td>
+                                        <td class="text-end">$0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <h5 class="h6">Notes:</h5>
+                                <p id="prev_notes" class="text-muted small" style="white-space: pre-wrap;">Thank you for your business.</p>
+                            </div>
+                            <div class="col-sm-6 text-sm-end">
+                                <p class="mb-1"><strong>Subtotal:</strong> <span id="prev_subtotal">$0.00</span></p>
+                                <p class="mb-1"><strong>Tax (<span id="prev_taxRate">0.00</span>%):</strong> <span id="prev_taxAmount">$0.00</span></p>
+                                <p class="mb-1"><strong>Discount (<span id="prev_discountRate">0.00</span>%):</strong> <span id="prev_discountAmount">$0.00</span></p>
+                                <hr class="my-1">
+                                <h4 class="fw-bold mt-2">Total: <span id="prev_totalAmount">$0.00</span></h4>
+                            </div>
+                        </div>
+
+                        <hr class="mt-4">
+                        <p class="text-center text-muted small">Thank you for your prompt payment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- html2pdf.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Embedded Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DOM Elements ---
+            const addItemBtn = document.getElementById('addItemBtn');
+            const invoiceItemsTable = document.getElementById('invoiceItems');
+            const companyLogoInput = document.getElementById('companyLogoInput');
+            const logoPreview = document.getElementById('logoPreview');
+            const invoiceLogoPreview = document.getElementById('invoiceLogoPreview');
+            const generatePdfBtn = document.getElementById('generatePdfBtn');
+            const invoicePreviewDiv = document.getElementById('invoicePreview');
+
+            // Form input fields affecting preview
+            const formInputs = document.querySelectorAll('#yourCompanyName, #yourCompanyAddress, #yourCompanyCity, #yourCompanyPhone, #clientCompanyName, #clientCompanyAddress, #clientCompanyCity, #clientCompanyPhone, #invoiceNumber, #invoiceDate, #dueDate, #notes, #taxRate, #discountRate');
+
+            // --- Utility Functions ---
+
+            // Format currency
+            const formatCurrency = (amount) => {
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD', // Change currency code if needed
+                    minimumFractionDigits: 2
+                });
+                return formatter.format(parseFloat(amount) || 0);
+            }
+
+             // Parse currency string back to number
+            const parseCurrency = (currencyString) => {
+                // Remove currency symbols, commas, etc.
+                 return parseFloat(currencyString.replace(/[^0-9.-]+/g,"")) || 0;
+            }
+
+            // Calculate totals for an item row
+            const calculateItemTotal = (row) => {
+                const quantity = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = quantity * price;
+                // Update the input/display field for the row total
+                const totalCell = row.querySelector('.item-total');
+                 if (totalCell) {
+                     totalCell.textContent = formatCurrency(total);
+                 }
+                return total;
+            };
+
+            // Calculate overall invoice totals (Subtotal, Tax, Discount, Total)
+            const calculateOverallTotal = () => {
+                let subtotal = 0;
+                invoiceItemsTable.querySelectorAll('tr').forEach(row => {
+                    subtotal += calculateItemTotal(row);
+                });
+
+                const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+                const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+
+                const taxAmount = subtotal * (taxRate / 100);
+                // Calculate discount AFTER tax or BEFORE tax? Usually before. Let's assume before.
+                const discountAmount = subtotal * (discountRate / 100);
+                // If discount should be applied AFTER tax:
+                // const discountAmount = (subtotal + taxAmount) * (discountRate / 100);
+                // const totalAmount = subtotal + taxAmount - discountAmount;
+
+                // Total calculation based on discount before tax
+                const totalAmount = subtotal - discountAmount + taxAmount;
+
+
+                // Update form summary fields
+                document.getElementById('subtotal').value = formatCurrency(subtotal);
+                document.getElementById('taxAmount').value = formatCurrency(taxAmount);
+                document.getElementById('discountAmount').value = formatCurrency(discountAmount);
+                document.getElementById('totalAmount').value = formatCurrency(totalAmount);
+
+                // Update preview summary fields - make sure IDs match HTML
+                document.getElementById('prev_subtotal').textContent = formatCurrency(subtotal);
+                document.getElementById('prev_taxRate').textContent = taxRate.toFixed(2);
+                document.getElementById('prev_taxAmount').textContent = formatCurrency(taxAmount);
+                document.getElementById('prev_discountRate').textContent = discountRate.toFixed(2);
+                document.getElementById('prev_discountAmount').textContent = formatCurrency(discountAmount);
+                document.getElementById('prev_totalAmount').textContent = formatCurrency(totalAmount);
+            };
+
+            // Update the live preview section
+            const updatePreview = () => {
+                // Simple text fields
+                document.getElementById('prev_yourCompanyName').textContent = document.getElementById('yourCompanyName').value.trim() || 'Your Company Name';
+                document.getElementById('prev_yourCompanyAddress').textContent = document.getElementById('yourCompanyAddress').value.trim() || '123 Your Street';
+                document.getElementById('prev_yourCompanyCity').textContent = document.getElementById('yourCompanyCity').value.trim() || 'Your City, YS 12345';
+                document.getElementById('prev_yourCompanyPhone').textContent = document.getElementById('yourCompanyPhone').value.trim() || 'Phone / Email';
+
+                document.getElementById('prev_clientCompanyName').textContent = document.getElementById('clientCompanyName').value.trim() || 'Client Company Name';
+                document.getElementById('prev_clientCompanyAddress').textContent = document.getElementById('clientCompanyAddress').value.trim() || '456 Client Avenue';
+                document.getElementById('prev_clientCompanyCity').textContent = document.getElementById('clientCompanyCity').value.trim() || 'Client City, CS 67890';
+                document.getElementById('prev_clientCompanyPhone').textContent = document.getElementById('clientCompanyPhone').value.trim() || 'Phone / Email';
+
+                document.getElementById('prev_invoiceNumber').textContent = document.getElementById('invoiceNumber').value.trim() || 'INV-001';
+                document.getElementById('prev_invoiceDate').textContent = document.getElementById('invoiceDate').value || 'YYYY-MM-DD';
+                document.getElementById('prev_dueDate').textContent = document.getElementById('dueDate').value || 'YYYY-MM-DD';
+
+                document.getElementById('prev_notes').textContent = document.getElementById('notes').value.trim() || 'Thank you for your business.';
+
+                // Update items in preview
+                const previewItemsTableBody = document.getElementById('prev_invoiceItems');
+                previewItemsTableBody.innerHTML = ''; // Clear existing preview items
+
+                invoiceItemsTable.querySelectorAll('tr').forEach(row => {
+                    const description = row.querySelector('.item-desc').value.trim() || 'Item Description';
+                    const quantity = parseFloat(row.querySelector('.item-qty').value) || 0;
+                    const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                    const totalText = row.querySelector('.item-total').textContent; // Get already formatted total from form row
+
+                    const previewRow = `
+                        <tr>
+                            <td>${description}</td>
+                            <td class="text-end">${quantity}</td>
+                            <td class="text-end">${formatCurrency(price)}</td>
+                            <td class="text-end">${totalText}</td>
+                        </tr>
+                    `;
+                    previewItemsTableBody.insertAdjacentHTML('beforeend', previewRow);
+                });
+
+                // Recalculate totals to update preview summary
+                calculateOverallTotal();
+            };
+
+            // Function to add a new item row
+            const addNewItemRow = () => {
+                 const newRowHtml = `
+                    <tr>
+                        <td><input type="text" class="form-control form-control-sm item-desc" placeholder="Item description"></td>
+                        <td><input type="number" class="form-control form-control-sm item-qty text-end" value="1" min="0" step="any"></td>
+                        <td><input type="number" class="form-control form-control-sm item-price text-end" value="0.00" step="0.01" min="0"></td>
+                        <td class="item-total text-end align-middle">${formatCurrency(0)}</td>
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-link btn-sm remove-item-btn p-0" title="Remove Item">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                invoiceItemsTable.insertAdjacentHTML('beforeend', newRowHtml);
+                // Add listeners to the new row's inputs immediately
+                const newRowElement = invoiceItemsTable.lastElementChild;
+                 newRowElement.querySelectorAll('.item-qty, .item-price, .item-desc').forEach(input => {
+                    input.addEventListener('input', handleItemInputChange);
+                });
+                updatePreview(); // Update preview after adding row
+            };
+
+            // Handler for item input changes (delegated listener won't work well for input events)
+            const handleItemInputChange = (event) => {
+                 updatePreview(); // Item description only needs preview update
+                 // Quantity and Price need total recalculation first
+                 if (event.target.classList.contains('item-qty') || event.target.classList.contains('item-price')) {
+                    const row = event.target.closest('tr');
+                    if (row) {
+                        calculateItemTotal(row); // Update just this row's total display
+                        calculateOverallTotal(); // Recalculate everything
+                    }
+                 }
+            };
+
+
+            // --- Event Listeners ---
+
+            // Add Item Button
+            addItemBtn.addEventListener('click', addNewItemRow);
+
+            // Remove Item Button (using event delegation on the table body)
+            invoiceItemsTable.addEventListener('click', (event) => {
+                const removeButton = event.target.closest('.remove-item-btn');
+                if (removeButton) {
+                    const row = removeButton.closest('tr');
+                     if (row) {
+                         row.remove();
+                         calculateOverallTotal(); // Recalculate after removing
+                         updatePreview(); // Update preview
+                     }
+                }
+            });
+
+            // Attach initial listeners to any pre-existing item rows (if we add default rows in HTML later)
+             invoiceItemsTable.querySelectorAll('.item-qty, .item-price, .item-desc').forEach(input => {
+                input.addEventListener('input', handleItemInputChange);
+             });
+
+
+            // Update preview when any main form input changes
+            formInputs.forEach(input => {
+                input.addEventListener('input', updatePreview);
+            });
+
+            // Handle Logo Upload
+            companyLogoInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        logoPreview.src = e.target.result;
+                        logoPreview.style.display = 'block';
+                        invoiceLogoPreview.src = e.target.result;
+                        invoiceLogoPreview.style.display = 'inline-block'; // Use inline-block for preview
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    // Reset if invalid file selected or selection cancelled
+                    logoPreview.src = '#';
+                    logoPreview.style.display = 'none';
+                    invoiceLogoPreview.src = '#';
+                    invoiceLogoPreview.style.display = 'none';
+                    // Clear the input value if the file is invalid, allows re-selection of the same file later
+                    if(file) companyLogoInput.value = "";
+                }
+            });
+
+            // Generate PDF Button
+            generatePdfBtn.addEventListener('click', () => {
+                const element = invoicePreviewDiv; // The element to convert to PDF
+                const invoiceNumber = document.getElementById('invoiceNumber').value.trim() || 'invoice';
+                const filename = `Invoice-${invoiceNumber.replace(/[^a-z0-9]/gi, '_')}.pdf`; // Sanitize filename
+
+                // Options for html2pdf
+                const opt = {
+                  margin:       [0.5, 0.2, 0.5, 0.2], // top, left, bottom, right margins in inches
+                  filename:     filename,
+                  image:        { type: 'jpeg', quality: 0.98 },
+                  html2canvas:  {
+                      scale: 2, // Higher scale for better quality
+                      useCORS: true, // Important for external images (like logo if from URL)
+                      logging: false // Disable extensive logging in console
+                  },
+                  jsPDF:        {
+                      unit: 'in',
+                      format: 'letter',
+                      orientation: 'portrait'
+                  },
+                  // Page break behavior (optional, adjust as needed)
+                  pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                // Hide elements not needed in PDF (like buttons within preview, if any)
+                // e.g., const buttonsToHide = element.querySelectorAll('.btn-hide-in-pdf');
+                // buttonsToHide.forEach(btn => btn.style.display = 'none');
+
+                // Use html2pdf library
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Optional: Restore hidden elements after PDF generation
+                    // buttonsToHide.forEach(btn => btn.style.display = '');
+                    console.log('PDF generated successfully.');
+                }).catch(err => {
+                     console.error("Error generating PDF:", err);
+                    // Optional: Restore hidden elements even if there's an error
+                    // buttonsToHide.forEach(btn => btn.style.display = '');
+                });
+            });
+
+
+            // --- Initial Setup ---
+            addNewItemRow(); // Add one item row initially
+
+            // Set default dates
+            const today = new Date();
+            document.getElementById('invoiceDate').value = today.toISOString().split('T')[0];
+            // Set default due date (e.g., 30 days from today)
+            const dueDate = new Date();
+            dueDate.setDate(today.getDate() + 30);
+            document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+
+            updatePreview(); // Initial preview render and calculation
+
+        });
+    </script>
+
+</body>
+</html>
