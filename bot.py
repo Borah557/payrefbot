@@ -12,7 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot token from BotFather
-TOKEN = "7972508793:AAGliWtKAbzXCEM4cvZYgB4JRgzG4HSpxeY"
+TOKEN = "7766320056:AAG3ZVx2nX9KUfCqweon4EJJLOJCcNravHk"
 
 # Dictionary to store user data (in a real application, use a database)
 user_data = {}
